@@ -3,8 +3,8 @@ class_name PressAccept_Comparator_Test_Utilities
 
 # |=========================================|
 # |                                         |
-# |           Press Accept: Typer           |
-# |        Getting Type Data In Godot       |
+# |         Press Accept: Comparator        |
+# | Encapsulated Comparison Logic For Godot |
 # |                                         |
 # |=========================================|
 #
@@ -18,7 +18,7 @@ class_name PressAccept_Comparator_Test_Utilities
 # |------------------|
 #
 # Organization Namespace : PressAccept
-# Package Namespace      : Typer
+# Package Namespace      : Comparator
 # Class                  : Test Utilities
 #
 # Organization        : Press Accept
@@ -40,6 +40,7 @@ class_name PressAccept_Comparator_Test_Utilities
 # |-----------|
 #
 # 1.0.0    06/01/2021    First Release
+# 1.0.1    12/29/2021    Added str(test) as message to _: assertion.call_func
 #
 
 # indices for what we're testing
