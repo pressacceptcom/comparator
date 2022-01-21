@@ -59,6 +59,12 @@ const STR_COMPARE_METHOD: String = 'compare'
 # ***************************
 
 
+# return our script path
+static func __get_script() -> String:
+
+	return 'res://addons/PressAccept/Comparator/Comparator.gd'
+
+
 # tests whether an object or Script has a 'compare' method
 static func is_comparator(
 		type) -> bool:

@@ -44,6 +44,12 @@ extends PressAccept_Comparator_Comparator
 # ***************************
 
 
+# return our script path
+static func __get_script() -> String:
+
+	return 'res://addons/PressAccept/Comparator/StringCaseInsensitive.gd'
+
+
 # return the relationship between two strings in a case-insensitive manner
 static func compare(
 		a_str,
