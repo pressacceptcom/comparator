@@ -1,5 +1,5 @@
 tool
-class_name PressAccept_Comparator_StringCaseInsensitive
+class_name PressAccept_Comparator_Dictionary
 
 extends PressAccept_Comparator_Comparator
 
@@ -16,7 +16,7 @@ extends PressAccept_Comparator_Comparator
 #
 # Organization Namespace : PressAccept
 # Package Namespace      : Comparator
-# Class                  : StringCaseInsensitive
+# Class                  : Dictionary
 #
 # Organization        : Press Accept
 # Organization URI    : https://pressaccept.com/
@@ -36,8 +36,6 @@ extends PressAccept_Comparator_Comparator
 # | Changelog |
 # |-----------|
 #
-# 1.0.0    12/29/2021    First Release
-#
 
 # ***************************
 # | Public Static Functions |
@@ -46,21 +44,66 @@ extends PressAccept_Comparator_Comparator
 
 # return the relationship between two strings in a case-insensitive manner
 static func compare(
-		a_str,
-		b_str,
+		a_dict,
+		b_dict,
 		by_ref: bool = false) -> int:
 
-	if a_str is String and b_str is String:
-		# was getting opposite results of docs:
-		# see: https://docs.godotengine.org/en/stable/classes/class_string.html#class-string-method-nocasecmp-to
-		if len(a_str) < len(b_str):
-			return -1
-		elif len(a_str) > len(b_str):
-			return 1
+	if a_dict is Dictionary and b_dict is Dictionary:
+		var Comparator: Script = PressAccept_Comparator_Comparator
+		var Comparable: Script = \
+			load('res://addons/PressAccept/Utilizer/Mixins/Comparable.gd') as Script
 
-		return a_str.nocasecmp_to(b_str)
+		var size        : int = a_dict.size()
+		var target_size : int = b_dict.size()
 
-	return PressAccept_Comparator_Comparator.compare(a_str, b_str)
+		if size == target_size \
+				and _contains_all(a_dict.keys(), b_dict.keys(), by_ref):
+			for key in a_dict:
+				var b_key = key
+				if not by_ref and Comparable:
+					for _key in b_dict:
+						if Comparable.is_comparable(b_key, _key) \
+								and Comparable.compare(b_key, _key) == \
+									Comparator.ENUM_RELATION.EQUAL:
+							b_key = _key
+							break
+
+				if not by_ref \
+						and a_dict[key] is Array \
+						and b_dict[b_key] is Array:
+					var comparison = \
+						load('res://addons/PressAccept/Comparator/Array.gd') \
+							.compare(a_dict[key], b_dict[b_key])
+
+					if comparison != Comparator.ENUM_RELATION.EQUAL:
+						return comparison
+				elif not by_ref \
+						and a_dict[key] is Dictionary \
+						and b_dict[b_key] is Dictionary:
+					var comparison = compare(a_dict[key], b_dict[b_key])
+
+					if comparison != Comparator.ENUM_RELATION.EQUAL:
+						return comparison
+				elif Comparable \
+						and Comparable \
+							.is_comparable(a_dict[key], b_dict[b_key]):
+					# comparison can be Comparable.STR_UNCOMPARABLE
+					var comparison = \
+						Comparable.compare(a_dict[key], b_dict[b_key], by_ref)
+
+					if comparison != Comparator.ENUM_RELATION.EQUAL:
+						return comparison
+				elif a_dict[key] != b_dict[b_key]:
+					return Comparator.ENUM_RELATION.LESS_THAN
+
+		elif size > target_size:
+			return Comparator.ENUM_RELATION.GREATER_THAN
+		else:
+			return Comparator.ENUM_RELATION.LESS_THAN
+
+		return Comparator.ENUM_RELATION.EQUAL
+
+	return PressAccept_Comparator_Comparator.compare(a_dict, b_dict)
 
 # Godot binds static calls it appears at compile time or else static functions
 # don't inherit, so we must redefine
@@ -123,8 +166,36 @@ static func greater_than_or_equal(
 static func transform(
 		value):
 
-	if value is String:
-		return value.to_lower()
-	
-	return value
+	return PressAccept_Normalizer_Normalizer.normalize_to_dict(value)
+
+
+# ****************************
+# | Private Static Functions |
+# ****************************
+
+
+# does target_arr contain all elements of comparison_arr?
+static func _contains_all(
+		target_arr     : Array,
+		comparison_arr : Array,
+		by_ref         : bool = false) -> bool:
+
+	var Comparator: Script = PressAccept_Comparator_Comparator
+	var Comparable: Script = \
+			load('res://addons/PressAccept/Utilizer/Mixins/Comparable.gd') as Script
+
+	for comparison in comparison_arr:
+		if Comparable:
+			var _contains: bool = false
+			for target in target_arr:
+				if Comparable.is_comparable(comparison, target) \
+					and Comparable.compare(comparison, target, by_ref) == \
+						Comparator.ENUM_RELATION.EQUAL:
+					_contains = true
+			if not _contains:
+				return false
+		elif not comparison in target_arr:
+			return false
+
+	return true
 

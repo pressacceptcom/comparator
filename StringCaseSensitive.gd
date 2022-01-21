@@ -47,9 +47,17 @@ extends PressAccept_Comparator_Comparator
 # return the relationship between two strings
 static func compare(
 		a_str,
-		b_str) -> int:
+		b_str,
+		by_ref: bool = false) -> int:
 
 	if a_str is String and b_str is String:
+		# was getting opposite results of docs:
+		# see: https://docs.godotengine.org/en/stable/classes/class_string.html#class-string-method-casecmp-to
+		if len(a_str) < len(b_str):
+			return -1
+		elif len(a_str) > len(b_str):
+			return 1
+
 		return a_str.casecmp_to(b_str)
 
 	return PressAccept_Comparator_Comparator.compare(a_str, b_str)
@@ -60,9 +68,10 @@ static func compare(
 # test whether two entities are equivalent
 static func equals(
 		a,
-		b) -> bool:
+		b,
+		by_ref: bool = false) -> bool:
 
-	return compare(a, b) == \
+	return compare(a, b, by_ref) == \
 		PressAccept_Comparator_Comparator.ENUM_RELATION.EQUAL
 
 

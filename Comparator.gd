@@ -75,22 +75,35 @@ static func is_comparator(
 # return the relationship between two entities
 static func compare(
 		a,
-		b) -> int:
+		b,
+		by_ref: bool = false) -> int:
+
+	if typeof(a) != typeof(b):
+		if typeof(a) < typeof(b):
+			return ENUM_RELATION.LESS_THAN
+		else:
+			return ENUM_RELATION.GREATER_THAN
+
+	if a == b:
+		return ENUM_RELATION.EQUAL
+
+	# you can only compare refs on dictionaries in GDScript
+	if typeof(a) == TYPE_DICTIONARY:
+		return ENUM_RELATION.LESS_THAN
 
 	if a > b:
 		return ENUM_RELATION.GREATER_THAN
-	elif a < b:
-		return ENUM_RELATION.LESS_THAN
 	else:
-		return ENUM_RELATION.EQUAL
+		return ENUM_RELATION.LESS_THAN
 
 
 # test whether two entities are equivalent
 static func equals(
 		a,
-		b) -> bool:
+		b,
+		by_ref: bool = false) -> bool:
 
-	return compare(a, b) == ENUM_RELATION.EQUAL
+	return compare(a, b, by_ref) == ENUM_RELATION.EQUAL
 
 
 # test whether a is less than b

@@ -1,5 +1,5 @@
 tool
-class_name PressAccept_Comparator_StringCaseInsensitive
+class_name PressAccept_Comparator_Array
 
 extends PressAccept_Comparator_Comparator
 
@@ -16,7 +16,7 @@ extends PressAccept_Comparator_Comparator
 #
 # Organization Namespace : PressAccept
 # Package Namespace      : Comparator
-# Class                  : StringCaseInsensitive
+# Class                  : Array
 #
 # Organization        : Press Accept
 # Organization URI    : https://pressaccept.com/
@@ -36,8 +36,6 @@ extends PressAccept_Comparator_Comparator
 # | Changelog |
 # |-----------|
 #
-# 1.0.0    12/29/2021    First Release
-#
 
 # ***************************
 # | Public Static Functions |
@@ -46,21 +44,53 @@ extends PressAccept_Comparator_Comparator
 
 # return the relationship between two strings in a case-insensitive manner
 static func compare(
-		a_str,
-		b_str,
+		a_arr,
+		b_arr,
 		by_ref: bool = false) -> int:
 
-	if a_str is String and b_str is String:
-		# was getting opposite results of docs:
-		# see: https://docs.godotengine.org/en/stable/classes/class_string.html#class-string-method-nocasecmp-to
-		if len(a_str) < len(b_str):
-			return -1
-		elif len(a_str) > len(b_str):
-			return 1
+	if a_arr is Array and b_arr is Array:
+		var Comparator: Script = PressAccept_Comparator_Comparator
+		var Comparable: Script = \
+			load('res://addons/PressAccept/Utilizer/Mixins/Comparable.gd') as Script
 
-		return a_str.nocasecmp_to(b_str)
+		var size        : int = a_arr.size()
+		var target_size : int = b_arr.size()
 
-	return PressAccept_Comparator_Comparator.compare(a_str, b_str)
+		if size == target_size:
+			for i in range(size):
+				if not by_ref and a_arr[i] is Array and b_arr[i] is Array:
+					var comparison = compare(a_arr[i], b_arr[i])
+					
+					if comparison != Comparator.ENUM_RELATION.EQUAL:
+						return comparison
+				elif not by_ref \
+						and a_arr[i] is Dictionary \
+						and b_arr[i] is Dictionary:
+					var comparison = \
+						load('res://addons/PressAccept/Comparator/Dictionary.gd') \
+							.compare(a_arr[i], b_arr[i])
+					
+					if comparison != Comparator.ENUM_RELATION.EQUAL:
+						return comparison
+				elif Comparable \
+						and Comparable.is_comparable(a_arr[i], b_arr[i]):
+					# comparison can be Comparable.STR_UNCOMPARABLE
+					var comparison = \
+						Comparable.compare(a_arr[i], b_arr[i], by_ref)
+
+					if comparison != Comparator.ENUM_RELATION.EQUAL:
+						return comparison
+				elif a_arr[i] != b_arr[i]:
+					return Comparator.ENUM_RELATION.LESS_THAN
+
+		elif size > target_size:
+			return Comparator.ENUM_RELATION.GREATER_THAN
+		else:
+			return Comparator.ENUM_RELATION.LESS_THAN
+
+		return Comparator.ENUM_RELATION.EQUAL
+
+	return PressAccept_Comparator_Comparator.compare(a_arr, b_arr, by_ref)
 
 # Godot binds static calls it appears at compile time or else static functions
 # don't inherit, so we must redefine
@@ -70,7 +100,7 @@ static func compare(
 static func equals(
 		a,
 		b,
-		by_ref: bool = false) -> bool:
+		by_ref = false) -> bool:
 
 	return compare(a, b, by_ref) == \
 		PressAccept_Comparator_Comparator.ENUM_RELATION.EQUAL
@@ -123,8 +153,5 @@ static func greater_than_or_equal(
 static func transform(
 		value):
 
-	if value is String:
-		return value.to_lower()
-	
-	return value
+	return PressAccept_Normalizer_Normalizer.normalize_to_array(value)
 
